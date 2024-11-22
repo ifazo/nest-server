@@ -15,7 +15,7 @@ export class CategoriesService {
     return this.databaseService.category.findMany();
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.databaseService.category.findUnique({
       where: {
         id,
@@ -23,7 +23,7 @@ export class CategoriesService {
     });
   }
 
-  update(id: number, updateCategoryDto: Prisma.CategoryUpdateInput) {
+  update(id: string, updateCategoryDto: Prisma.CategoryUpdateInput) {
     return this.databaseService.category.update({
       where: {
         id,
@@ -32,7 +32,7 @@ export class CategoriesService {
     });
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.databaseService.category.delete({
       where: {
         id,

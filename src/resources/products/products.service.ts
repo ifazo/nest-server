@@ -12,17 +12,17 @@ export class ProductsService {
     });
   }
 
-  async findAll(category?: string) {
-    if (category)
+  async findAll(categoryId?: string) {
+    if (categoryId)
       return this.databaseService.product.findMany({
         where: {
-          category,
+          categoryId,
         },
       });
     return this.databaseService.product.findMany();
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     return this.databaseService.product.findUnique({
       where: {
         id,
@@ -30,7 +30,7 @@ export class ProductsService {
     });
   }
 
-  async update(id: number, updateProductDto: Prisma.ProductUpdateInput) {
+  async update(id: string, updateProductDto: Prisma.ProductUpdateInput) {
     return this.databaseService.product.update({
       where: {
         id,
@@ -39,7 +39,7 @@ export class ProductsService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     return this.databaseService.product.delete({
       where: {
         id,

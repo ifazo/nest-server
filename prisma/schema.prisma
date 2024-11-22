@@ -1,61 +1,72 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
-// prisma/schema.prisma
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
-  USER
-  ADMIN
+  user
+  admin
+  super_admin
 }
 
 model User {
-  id              Int               @id @default(autoincrement())
-  email           String            @unique
-  name            String
-  role            Role              @default(USER)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  RatingAndReview RatingAndReview[]
+  id        String   @id @default(uuid())
+  name      String
+  image     String?
+  email     String   @unique
+  password  String
+  role      Role     @default(user)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  Review    Review[]
+
+  @@map("users")
 }
 
 model Category {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Product   Product[]
+  id          String    @id @default(uuid())
+  name        String    @unique
+  image       String
+  description String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Product     Product[]
+
+  @@map("categories")
 }
 
 model Product {
-  id              Int               @id @default(autoincrement())
-  name            String
-  price           Float
-  description     String
-  categories      Category          @relation(fields: [category], references: [name])
-  category        String
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  RatingAndReview RatingAndReview[]
+  id          String   @id @default(uuid())
+  name        String
+  image       String
+  description String
+  price       Float
+  rating      Float
+  stock       Int
+  categoryId  String   @map("catagoery_id")
+  category    Category @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Review      Review[]
+
+  @@map("products")
 }
 
-model RatingAndReview {
-  id        Int      @id @default(autoincrement())
-  rating    Int
+model Review {
+  id        String   @id @default(uuid())
+  rating    Float
   review    String
-  user      User     @relation(fields: [email], references: [email])
-  email     String
-  products  Product  @relation(fields: [product], references: [id])
-  product   Int
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("reviews")
 }

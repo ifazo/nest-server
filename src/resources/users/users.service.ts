@@ -22,7 +22,7 @@ export class UsersService {
     return this.databaseService.user.findMany();
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     return this.databaseService.user.findUnique({
       where: {
         id,
@@ -30,7 +30,7 @@ export class UsersService {
     });
   }
 
-  async update(id: number, updateUserDto: Prisma.UserUpdateInput) {
+  async update(id: string, updateUserDto: Prisma.UserUpdateInput) {
     return this.databaseService.user.update({
       where: {
         id,
@@ -39,7 +39,7 @@ export class UsersService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     return this.databaseService.user.delete({
       where: {
         id,

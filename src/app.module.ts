@@ -1,13 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ProductsModule } from './products/products.module';
-import { CategoriesModule } from './categories/categories.module';
-import { UsersModule } from './users/users.module';
+import { ProductsModule } from './resources/products/products.module';
+import { CategoriesModule } from './resources/categories/categories.module';
+import { UsersModule } from './resources/users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from './logger/logger.module';
+import { Auth } from './helpers/auth/auth';
+import { ReviewsModule } from './resources/reviews/reviews.module';
+import { AuthModule } from './resources/auth/auth.module';
 
 @Module({
   imports: [
@@ -28,6 +31,8 @@ import { LoggerModule } from './logger/logger.module';
       },
     ]),
     LoggerModule,
+    ReviewsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -36,6 +41,7 @@ import { LoggerModule } from './logger/logger.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    Auth,
   ],
 })
 export class AppModule {}
