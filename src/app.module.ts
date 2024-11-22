@@ -7,10 +7,9 @@ import { UsersModule } from './resources/users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { LoggerModule } from './logger/logger.module';
-import { Auth } from './helpers/auth/auth';
+import { LoggerModule } from './log/logger.module';
 import { ReviewsModule } from './resources/reviews/reviews.module';
-import { AuthModule } from './resources/auth/auth.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -41,7 +40,6 @@ import { AuthModule } from './resources/auth/auth.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    Auth,
   ],
 })
 export class AppModule {}

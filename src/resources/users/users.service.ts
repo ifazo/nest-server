@@ -6,12 +6,6 @@ import { DatabaseService } from 'src/database/database.service';
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async create(createUserDto: Prisma.UserCreateInput) {
-    return this.databaseService.user.create({
-      data: createUserDto,
-    });
-  }
-
   async findAll(role?: Role) {
     if (role)
       return this.databaseService.user.findMany({
