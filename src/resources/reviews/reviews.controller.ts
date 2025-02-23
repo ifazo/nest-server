@@ -7,24 +7,28 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { Prisma } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { User } from 'src/auth/user.decorator';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('buyer')
   create(
     @Body()
-    createReviewDto: Prisma.ReviewCreateInput & {
-      userId: string;
-      productId: string;
-    },
+    createReviewDto: Prisma.ReviewCreateInput & { userId: string },
+    @User() user: any,
   ) {
-    const { userId, productId, ...reviewData } = createReviewDto;
-    return this.reviewsService.create(reviewData, userId, productId);
+    return this.reviewsService.create(createReviewDto, user.id);
   }
 
   @Get()

@@ -13,7 +13,7 @@ import { JwtStrategy } from 'src/auth/jwt.strategy';
     DatabaseModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET_KEY || 'ifaz-nest-jwt-secret-key',
+      secret: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: '24h' },
     }),
   ],

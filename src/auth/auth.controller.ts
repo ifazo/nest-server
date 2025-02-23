@@ -6,12 +6,12 @@ import { Prisma } from '@prisma/client';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signin')
+  @Post('sign-in')
   async signIn(@Body() body: { email: string; password: string }) {
     return this.authService.signIn(body.email, body.password);
   }
 
-  @Post('signup')
+  @Post('sign-up')
   async signUp(@Body() createUser: Prisma.UserCreateInput) {
     return this.authService.signUp(createUser);
   }
