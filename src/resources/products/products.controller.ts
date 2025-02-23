@@ -20,7 +20,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   create(@Body() createProductDto: Prisma.ProductCreateInput) {
     return this.productsService.create(createProductDto);
   }
@@ -37,7 +37,7 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   update(
     @Param('id') id: string,
     @Body() updateProductDto: Prisma.ProductUpdateInput,
@@ -47,7 +47,7 @@ export class ProductsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
   }

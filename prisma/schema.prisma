@@ -1,6 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -9,33 +8,46 @@ datasource db {
 }
 
 enum Role {
-  user
   admin
-  super_admin
+  seller
+  buyer
+}
+
+enum OrderStatus {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  image     String?
-  email     String   @unique
-  password  String
-  role      Role     @default(user)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  Review    Review[]
+  id       String   @id @default(uuid())
+  name     String?
+  image    String?
+  email    String   @unique
+  password String
+  role     Role @default(buyer)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  reviews Review[]
+  orders  Order[]
 
   @@map("users")
 }
 
 model Category {
-  id          String    @id @default(uuid())
-  name        String    @unique
+  id          String @id @default(uuid())
+  name        String @unique
   image       String
   description String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  Product     Product[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  products Product[]
 
   @@map("categories")
 }
@@ -48,25 +60,42 @@ model Product {
   price       Float
   rating      Float
   stock       Int
-  categoryId  String   @map("catagoery_id")
+  categoryId  String   @map("category_id")
   category    Category @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  Review      Review[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  reviews   Review[]
 
   @@map("products")
 }
 
 model Review {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   rating    Float
   review    String
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  productId String   @map("product_id")
-  product   Product  @relation(fields: [productId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId    String  @map("user_id")
+  user      User    @relation(fields: [userId], references: [id])
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("reviews")
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  products  Json[]
+  total     Float
+  userId    String      @map("user_id")
+  user      User        @relation(fields: [userId], references: [id])
+  sessionId String      @map("session_id")
+  status    OrderStatus @default(pending)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("orders")
 }

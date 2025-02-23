@@ -20,7 +20,7 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   create(@Body() createCategoryDto: Prisma.CategoryCreateInput) {
     return this.categoriesService.create(createCategoryDto);
   }
@@ -37,7 +37,7 @@ export class CategoriesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   update(
     @Param('id') id: string,
     @Body() updateCategoryDto: Prisma.CategoryUpdateInput,
@@ -47,7 +47,7 @@ export class CategoriesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);
   }

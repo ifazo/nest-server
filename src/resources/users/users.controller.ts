@@ -26,7 +26,7 @@ export class UsersController {
   @SkipThrottle({ default: false })
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   findAll(@Ip() ip: string, @Query('role') role?: Role) {
     this.logger.log(`IP: ${ip} findAll`, UsersController.name);
     return this.usersService.findAll(role);
@@ -35,14 +35,14 @@ export class UsersController {
   @Throttle({ minute: { ttl: 1000, limit: 1 } })
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   update(
     @Param('id') id: string,
     @Body() updateUserDto: Prisma.UserUpdateInput,
@@ -52,7 +52,7 @@ export class UsersController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @Roles('admin', 'seller')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
