@@ -11,16 +11,10 @@ import { DatabaseService } from 'src/database/database.service';
 export class ReviewsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async create(createReviewDto: Prisma.ReviewCreateInput, userId: string) {
-    if (!userId) {
-      throw new BadRequestException('userId is required');
-    }
+  async create(createReviewDto: Prisma.ReviewCreateInput) {
     try {
       const review = await this.databaseService.review.create({
-        data: {
-          ...createReviewDto,
-          user: { connect: { id: userId } },
-        },
+        data: createReviewDto,
       });
       return {
         statusCode: HttpStatus.CREATED,
@@ -99,9 +93,26 @@ export class ReviewsService {
     }
   }
 
-  async update(id: string, updateReviewDto: Prisma.ReviewUpdateInput) {
+  async update(
+    id: string,
+    updateReviewDto: Prisma.ReviewUpdateInput,
+    userId: string,
+  ) {
     try {
-      const review = await this.databaseService.review.update({
+      const review = await this.databaseService.review.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!review) {
+        throw new BadRequestException('Review not found');
+      }
+      if (review.userId !== userId) {
+        throw new BadRequestException(
+          'You are not authorized to delete this review',
+        );
+      }
+      const updateReview = await this.databaseService.review.update({
         where: {
           id,
         },
@@ -111,7 +122,7 @@ export class ReviewsService {
         statusCode: HttpStatus.OK,
         success: true,
         message: 'Review updated successfully',
-        data: review,
+        data: updateReview,
       };
     } catch (error) {
       throw new HttpException(
@@ -126,9 +137,22 @@ export class ReviewsService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     try {
-      const review = await this.databaseService.review.delete({
+      const review = await this.databaseService.review.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!review) {
+        throw new BadRequestException('Review not found');
+      }
+      if (review.userId !== userId) {
+        throw new BadRequestException(
+          'You are not authorized to delete this review',
+        );
+      }
+      const deleteReview = await this.databaseService.review.delete({
         where: {
           id,
         },
@@ -137,7 +161,7 @@ export class ReviewsService {
         statusCode: HttpStatus.OK,
         success: true,
         message: 'Review deleted successfully',
-        data: review,
+        data: deleteReview,
       };
     } catch (error) {
       throw new HttpException(

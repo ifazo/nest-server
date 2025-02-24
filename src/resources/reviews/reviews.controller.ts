@@ -8,13 +8,14 @@ import {
   Delete,
   Query,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { Prisma } from '@prisma/client';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { User } from 'src/auth/user.decorator';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { Roles } from 'src/auth/roles.decorator';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { decodeToken } from 'src/utils/jwt.util';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -25,10 +26,13 @@ export class ReviewsController {
   @Roles('buyer')
   create(
     @Body()
-    createReviewDto: Prisma.ReviewCreateInput & { userId: string },
-    @User() user: any,
+    createReviewDto: Prisma.ReviewCreateInput,
+    @Headers('authorization') authHeader: string,
   ) {
-    return this.reviewsService.create(createReviewDto, user.id);
+    const token = authHeader?.split(' ')[1];
+    const user = decodeToken(token);
+    console.log(user);
+    return this.reviewsService.create(createReviewDto);
   }
 
   @Get()
@@ -45,12 +49,20 @@ export class ReviewsController {
   update(
     @Param('id') id: string,
     @Body() updateReviewDto: Prisma.ReviewUpdateInput,
+    @Headers('authorization') authHeader: string,
   ) {
-    return this.reviewsService.update(id, updateReviewDto);
+    const token = authHeader?.split(' ')[1];
+    const user = decodeToken(token);
+    return this.reviewsService.update(id, updateReviewDto, user.id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reviewsService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
+  ) {
+    const token = authHeader?.split(' ')[1];
+    const user = decodeToken(token);
+    return this.reviewsService.remove(id, user.id);
   }
 }

@@ -9,15 +9,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET_KEY || 'ifaz-nest-jwt-secret-key',
+      secretOrKey: process.env.JWT_SECRET_KEY,
     });
   }
 
-  async validate(payload: { sub: string; email: string; role: string }) {
+  async validate(payload: { id: string; email: string; role: string }) {
     const user = await this.databaseService.user.findUnique({
-      where: { id: payload.sub },
+      where: { id: payload.id },
     });
-
     if (!user) {
       throw new Error('Unauthorized');
     }

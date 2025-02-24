@@ -9,7 +9,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from './log/logger.module';
 import { ReviewsModule } from './resources/reviews/reviews.module';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './resources/auth/auth.module';
 
 @Module({
   imports: [
