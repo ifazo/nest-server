@@ -1,6 +1,9 @@
 # Use Node.js 22 as the base image
 FROM node:22
 
+# Install Redis and Supervisor
+RUN apt-get update && apt-get install -y redis-server supervisor
+
 # Set working directory inside the container
 WORKDIR /app
 
@@ -15,13 +18,18 @@ COPY . .
 
 # Set environment variables
 ENV DATABASE_URL="postgresql://nestdb_owner:npg_EmxM8RHBOw6a@ep-nameless-bird-a18qlch8-pooler.ap-southeast-1.aws.neon.tech/nestdb?sslmode=require"
-ENV REDIS_URL="redis://redis:6379"
 
-# Expose port
-EXPOSE 8000
+# Run Prisma migrations and generate client after install
+RUN npm run prisma:deploy && npm run prisma:generate
 
-# Generate Prisma client
-RUN npx prisma generate
+# Build the NestJS application (compile TypeScript to JavaScript)
+RUN npm run build
 
-# Run Prisma migrations before starting the app
-CMD npx prisma migrate deploy && npm run start:prod
+# Copy Supervisor configuration
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Expose the ports
+EXPOSE 8000 6379
+
+# Start all services using Supervisor
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
