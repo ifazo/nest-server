@@ -4,7 +4,7 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { Prisma, Role } from '@prisma/client';
+import { Prisma, Role, User } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
@@ -39,21 +39,24 @@ export class UsersService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user: User) {
     try {
-      const user = await this.databaseService.user.findUnique({
+      const findUser = await this.databaseService.user.findUnique({
         where: {
           id,
         },
       });
-      if (!user) {
+      if (!findUser) {
         throw new BadRequestException('User not found');
+      }
+      if (findUser.id !== user.id) {
+        throw new BadRequestException('Unauthorized access');
       }
       return {
         statusCode: HttpStatus.OK,
         success: true,
         message: 'User retrieved successfully',
-        data: user,
+        data: findUser,
       };
     } catch (error) {
       throw new HttpException(
@@ -68,9 +71,20 @@ export class UsersService {
     }
   }
 
-  async update(id: string, updateUserDto: Prisma.UserUpdateInput) {
+  async update(id: string, updateUserDto: Prisma.UserUpdateInput, user: User) {
     try {
-      const user = await this.databaseService.user.update({
+      const findUser = await this.databaseService.user.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!findUser) {
+        throw new BadRequestException('User not found');
+      }
+      if (findUser.id !== user.id) {
+        throw new BadRequestException('Unauthorized access');
+      }
+      const updateUser = await this.databaseService.user.update({
         where: {
           id,
         },
@@ -80,7 +94,7 @@ export class UsersService {
         statusCode: HttpStatus.OK,
         success: true,
         message: 'User updated successfully',
-        data: user,
+        data: updateUser,
       };
     } catch (error) {
       throw new HttpException(
@@ -95,9 +109,20 @@ export class UsersService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: User) {
     try {
-      const user = await this.databaseService.user.delete({
+      const findUser = await this.databaseService.user.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!findUser) {
+        throw new BadRequestException('User not found');
+      }
+      if (findUser.id !== user.id) {
+        throw new BadRequestException('Unauthorized access');
+      }
+      const deleteUser = await this.databaseService.user.delete({
         where: {
           id,
         },
@@ -106,7 +131,7 @@ export class UsersService {
         statusCode: HttpStatus.OK,
         success: true,
         message: 'User deleted successfully',
-        data: user,
+        data: deleteUser,
       };
     } catch (error) {
       throw new HttpException(

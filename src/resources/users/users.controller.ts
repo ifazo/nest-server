@@ -8,6 +8,7 @@ import {
   Query,
   Ip,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Prisma, Role } from '@prisma/client';
@@ -16,6 +17,7 @@ import { LoggerService } from 'src/log/logger.service';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Roles } from 'src/decorators/roles.decorator';
+import { decodeToken } from 'src/utils/jwt.util';
 
 @SkipThrottle()
 @Controller('users')
@@ -34,26 +36,33 @@ export class UsersController {
 
   @Throttle({ minute: { ttl: 1000, limit: 1 } })
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  findOne(
+    @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
+  ) {
+    const token = authHeader?.split(' ')[1];
+    const user = decodeToken(token);
+    return this.usersService.findOne(id, user);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
   update(
     @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
     @Body() updateUserDto: Prisma.UserUpdateInput,
   ) {
-    return this.usersService.update(id, updateUserDto);
+    const token = authHeader?.split(' ')[1];
+    const user = decodeToken(token);
+    return this.usersService.update(id, updateUserDto, user);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
+  ) {
+    const token = authHeader?.split(' ')[1];
+    const user = decodeToken(token);
+    return this.usersService.remove(id, user);
   }
 }

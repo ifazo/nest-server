@@ -27,11 +27,7 @@ export class ReviewsController {
   create(
     @Body()
     createReviewDto: Prisma.ReviewCreateInput,
-    @Headers('authorization') authHeader: string,
   ) {
-    const token = authHeader?.split(' ')[1];
-    const user = decodeToken(token);
-    console.log(user);
     return this.reviewsService.create(createReviewDto);
   }
 

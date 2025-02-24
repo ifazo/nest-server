@@ -11,6 +11,7 @@ import { LoggerModule } from './log/logger.module';
 import { ReviewsModule } from './resources/reviews/reviews.module';
 import { AuthModule } from './resources/auth/auth.module';
 import { PaymentsModule } from './resources/payments/payments.module';
+import { OrdersModule } from './resources/orders/orders.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PaymentsModule } from './resources/payments/payments.module';
     ReviewsModule,
     AuthModule,
     PaymentsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
