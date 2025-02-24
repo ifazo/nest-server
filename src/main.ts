@@ -8,7 +8,7 @@ async function bootstrap() {
   app.use(helmet());
   app.enableCors();
   app.setGlobalPrefix('/api');
-  await app.listen(port);
+  await app.listen(8000, '0.0.0.0');
   console.log(`Server running at: http://localhost:${port}`);
 }
 

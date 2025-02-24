@@ -9,6 +9,12 @@ services:
       DATABASE_URL: 'postgresql://nestdb_owner:npg_EmxM8RHBOw6a@ep-nameless-bird-a18qlch8-pooler.ap-southeast-1.aws.neon.tech/nestdb?sslmode=require'
     depends_on:
       - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 60s
+      retries: 3
+      start_period: 60s
+      timeout: 60s
 
   redis:
     image: redis:latest
