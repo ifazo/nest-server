@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Prisma, Role, User } from '@prisma/client';
+import redis from 'src/config/redis.config';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
@@ -13,6 +14,16 @@ export class UsersService {
 
   async findAll(role?: Role) {
     try {
+      const cacheKey = role ? `users:role:${role}` : 'users:all';
+      const cachedUsers = await redis.get(cacheKey);
+      if (cachedUsers) {
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Users retrieved successfully (from cache)',
+          data: JSON.parse(cachedUsers),
+        };
+      }
       const users = role
         ? await this.databaseService.user.findMany({
             where: {
@@ -20,6 +31,9 @@ export class UsersService {
             },
           })
         : await this.databaseService.user.findMany();
+      await redis.set(cacheKey, JSON.stringify(users), {
+        EX: 3600,
+      });
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -41,6 +55,7 @@ export class UsersService {
 
   async findOne(id: string, user: User) {
     try {
+      const cacheUser = await redis.get(`user:${id}`);
       const findUser = await this.databaseService.user.findUnique({
         where: {
           id,
@@ -52,6 +67,15 @@ export class UsersService {
       if (findUser.id !== user.id) {
         throw new BadRequestException('Unauthorized access');
       }
+      if (cacheUser) {
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'User retrieved successfully',
+          data: JSON.parse(cacheUser),
+        };
+      }
+      await redis.set(`user:${id}`, JSON.stringify(findUser), { EX: 600 });
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -90,6 +114,9 @@ export class UsersService {
         },
         data: updateUserDto,
       });
+      await redis.del(`user:${id}`);
+      await redis.del('users:all');
+      await redis.del(`users:role:${findUser.role}`);
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -127,6 +154,9 @@ export class UsersService {
           id,
         },
       });
+      await redis.del(`user:${id}`);
+      await redis.del('users:all');
+      await redis.del(`users:role:${findUser.role}`);
       return {
         statusCode: HttpStatus.OK,
         success: true,

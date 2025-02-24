@@ -3,6 +3,15 @@ services:
   nest-app:
     build: .
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       NODE_ENV: production
+      DATABASE_URL: 'postgresql://nestdb_owner:npg_EmxM8RHBOw6a@ep-nameless-bird-a18qlch8-pooler.ap-southeast-1.aws.neon.tech/nestdb?sslmode=require'
+      REDIS_URL: 'redis://redis:6379'
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'

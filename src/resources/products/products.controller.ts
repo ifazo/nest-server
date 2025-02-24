@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Prisma } from '@prisma/client';
@@ -26,8 +27,22 @@ export class ProductsController {
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(
+    @Query('categoryId') categoryId?: string,
+    @Query('search') search?: string,
+    @Query('price') price?: string,
+    @Query('rating') rating?: string,
+    @Query('take') take?: number,
+    @Query('skip') skip?: number,
+  ) {
+    return this.productsService.findAll(
+      categoryId,
+      search,
+      price,
+      rating,
+      take,
+      skip,
+    );
   }
 
   @Get(':id')

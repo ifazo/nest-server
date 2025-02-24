@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import redis from 'src/config/redis.config';
 import { DatabaseService } from 'src/database/database.service';
 import { ReviewSchema } from 'src/schemas/review.schema';
 
@@ -20,6 +21,9 @@ export class ReviewsService {
       }
       const review = await this.databaseService.review.create({
         data: createReviewDto,
+      });
+      await redis.set(`review:${review.id}`, JSON.stringify(review), {
+        EX: 600,
       });
       return {
         statusCode: HttpStatus.CREATED,
@@ -45,10 +49,22 @@ export class ReviewsService {
       throw new BadRequestException('productId is required');
     }
     try {
+      const cachedReviews = await redis.get(`product reviews:${productId}`);
+      if (cachedReviews) {
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Reviews retrieved from redis cache',
+          data: JSON.parse(cachedReviews),
+        };
+      }
       const reviews = await this.databaseService.review.findMany({
         where: {
           productId,
         },
+      });
+      await redis.set(`product reviews:${productId}`, JSON.stringify(reviews), {
+        EX: 600,
       });
       return {
         statusCode: HttpStatus.OK,
@@ -71,6 +87,15 @@ export class ReviewsService {
 
   async findOne(id: string) {
     try {
+      const cachedReview = await redis.get(`review:${id}`);
+      if (cachedReview) {
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Review retrieved from redis cache',
+          data: JSON.parse(cachedReview),
+        };
+      }
       const review = await this.databaseService.review.findUnique({
         where: {
           id,
@@ -79,6 +104,7 @@ export class ReviewsService {
       if (!review) {
         throw new BadRequestException('Review not found');
       }
+      await redis.set(`review:${id}`, JSON.stringify(review), { EX: 600 });
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -123,6 +149,8 @@ export class ReviewsService {
         },
         data: updateReviewDto,
       });
+      await redis.del(`review:${id}`);
+      await redis.del(`product reviews:${review.productId}`);
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -162,6 +190,8 @@ export class ReviewsService {
           id,
         },
       });
+      await redis.del(`review:${id}`);
+      await redis.del(`product reviews:${review.productId}`);
       return {
         statusCode: HttpStatus.OK,
         success: true,

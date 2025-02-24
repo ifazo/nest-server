@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import redis from 'src/config/redis.config';
 import { DatabaseService } from 'src/database/database.service';
 import { CategorySchema } from 'src/schemas/category.schema';
 
@@ -21,6 +22,10 @@ export class CategoriesService {
       const category = await this.databaseService.category.create({
         data: createCategoryDto,
       });
+      await redis.set(`category:${category.id}`, JSON.stringify(category), {
+        EX: 600,
+      });
+      await redis.del('categories');
       return {
         statusCode: HttpStatus.CREATED,
         success: true,
@@ -42,7 +47,17 @@ export class CategoriesService {
 
   async findAll() {
     try {
+      const cachedCategories = await redis.get('categories');
+      if (cachedCategories) {
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Categories retrieved from redis cache',
+          data: JSON.parse(cachedCategories),
+        };
+      }
       const categories = await this.databaseService.category.findMany();
+      await redis.set('categories', JSON.stringify(categories), { EX: 3600 });
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -64,12 +79,22 @@ export class CategoriesService {
 
   async findOne(id: string) {
     try {
+      const cacheCategory = await redis.get(`category:${id}`);
+      if (cacheCategory) {
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Category retrieved from redis cache',
+          data: JSON.parse(cacheCategory),
+        };
+      }
       const category = await this.databaseService.category.findUnique({
         where: { id },
       });
       if (!category) {
         throw new BadRequestException('Category not found');
       }
+      await redis.set(`category:${id}`, JSON.stringify(category));
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -95,6 +120,8 @@ export class CategoriesService {
         where: { id },
         data: updateCategoryDto,
       });
+      await redis.del(`category:${id}`);
+      await redis.del('categories');
       return {
         statusCode: HttpStatus.OK,
         success: true,
@@ -119,6 +146,8 @@ export class CategoriesService {
       const category = await this.databaseService.category.delete({
         where: { id },
       });
+      await redis.del(`category:${id}`);
+      await redis.del('categories');
       return {
         statusCode: HttpStatus.OK,
         success: true,

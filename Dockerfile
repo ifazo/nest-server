@@ -13,8 +13,9 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
-# Hardcode DATABASE_URL inside the container
+# Set environment variables
 ENV DATABASE_URL="postgresql://nestdb_owner:npg_EmxM8RHBOw6a@ep-nameless-bird-a18qlch8-pooler.ap-southeast-1.aws.neon.tech/nestdb?sslmode=require"
+ENV REDIS_URL="redis://redis:6379"
 
 # Expose port
 EXPOSE 8000

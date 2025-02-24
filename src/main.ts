@@ -4,9 +4,12 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const port = process.env.PORT || 8000;
   app.use(helmet());
   app.enableCors();
   app.setGlobalPrefix('/api');
-  await app.listen(8000);
+  await app.listen(port);
+  console.log(`Server running at: http://localhost:${port}`);
 }
+
 bootstrap();
