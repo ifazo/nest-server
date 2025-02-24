@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+import { CategorySchema } from 'src/schemas/category.schema';
 
 @Injectable()
 export class CategoriesService {
@@ -13,6 +14,10 @@ export class CategoriesService {
 
   async create(createCategoryDto: Prisma.CategoryCreateInput) {
     try {
+      const validateCategory = CategorySchema.safeParse(createCategoryDto);
+      if (!validateCategory.success) {
+        throw new BadRequestException(validateCategory.error);
+      }
       const category = await this.databaseService.category.create({
         data: createCategoryDto,
       });

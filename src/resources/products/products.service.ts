@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+import { ProductSchema } from 'src/schemas/product.schema';
 
 @Injectable()
 export class ProductsService {
@@ -13,6 +14,10 @@ export class ProductsService {
 
   async create(createProductDto: Prisma.ProductCreateInput) {
     try {
+      const validateProduct = ProductSchema.safeParse(createProductDto);
+      if (!validateProduct.success) {
+        throw new BadRequestException(validateProduct.error);
+      }
       const product = await this.databaseService.product.create({
         data: createProductDto,
       });

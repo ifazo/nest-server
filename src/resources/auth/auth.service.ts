@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -6,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+import { UserSchema } from 'src/schemas/user.schema';
 import { comparePassword, hashPassword } from 'src/utils/bcrypt.utils';
 import { generateToken } from 'src/utils/jwt.util';
 
@@ -47,6 +49,10 @@ export class AuthService {
 
   async signUp(createUser: Prisma.UserCreateInput) {
     try {
+      const validateUser = UserSchema.safeParse(createUser);
+      if (!validateUser.success) {
+        throw new BadRequestException(validateUser.error);
+      }
       const userExists = await this.databaseService.user.findUnique({
         where: { email: createUser.email },
       });

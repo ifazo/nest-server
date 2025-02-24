@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+import { ReviewSchema } from 'src/schemas/review.schema';
 
 @Injectable()
 export class ReviewsService {
@@ -13,6 +14,10 @@ export class ReviewsService {
 
   async create(createReviewDto: Prisma.ReviewCreateInput) {
     try {
+      const validateReview = ReviewSchema.safeParse(createReviewDto);
+      if (!validateReview.success) {
+        throw new BadRequestException(validateReview.error);
+      }
       const review = await this.databaseService.review.create({
         data: createReviewDto,
       });
